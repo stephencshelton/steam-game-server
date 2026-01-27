@@ -32,12 +32,31 @@ spec:
       - name: {{ .Chart.Name }}-installer
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        env:
+        - name: HOME
+          value: /home/steam
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          readOnlyRootFilesystem: false
+          runAsNonRoot: true
         command:
         - /bin/bash
-        - -c
+        - -lc
         - |
           echo "Initializing SteamCMD and installing game..."
-          steamcmd +force_install_dir /home/steam/serverfiles +login anonymous +app_update {{ .Values.gameServer.steamId }} validate +quit
+          steamcmd \
+            +@ShutdownOnFailedCommand 1 \
+            +@NoPromptForPassword 1 \
+            +@sSteamCmdForcePlatformType linux \
+            +force_install_dir /home/steam/serverfiles \
+            +login anonymous \
+            +app_update {{ .Values.gameServer.steamId }} validate \
+            +quit
           echo "Game installation complete!"
         volumeMounts:
         - name: server-files
