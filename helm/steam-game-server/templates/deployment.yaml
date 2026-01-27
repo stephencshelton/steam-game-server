@@ -42,6 +42,7 @@ spec:
         volumeMounts:
         - name: server-files
           mountPath: /home/steam/serverfiles
+          readOnly: false
       containers:
       - name: {{ .Chart.Name }}
         securityContext:
