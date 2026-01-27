@@ -11,7 +11,7 @@ rules:
   comments-indentation: {}
   document-start: disable
   truthy:
-    allowed: ['true', 'false', 'yes', 'no']
+    check-keys: false
 ignore: |
   .github/appmod/
   node_modules/
