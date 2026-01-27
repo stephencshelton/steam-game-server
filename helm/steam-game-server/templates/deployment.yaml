@@ -68,7 +68,7 @@ spec:
         - /bin/bash
         - -lc
         - |
-          exec /home/steam/serverfiles/startserver.sh -configfile=/home/steam/serverfiles/serverconfig.xml -logfile /home/steam/serverfiles/7dtd.log
+          exec /home/steam/serverfiles/startserver.sh -configfile=/home/steam/serverfiles/serverconfig.xml
         env:
         - name: STEAM_APP_ID
           value: "{{ .Values.gameServer.steamId }}"
