@@ -4,13 +4,13 @@
 replicaCount: 1
 
 image:
-  repository: ghcr.io/sshelton/steam-game-server/steamcmd
+  repository: steamcmd/steamcmd
   pullPolicy: IfNotPresent
   tag: latest
 
 gameServer:
   steamId: "232250"
-  startCommand: "cd /home/steam/serverfiles && ./ShooterGame/Binaries/Linux/ShooterGameServer"
+  startCommand: "/home/steam/serverfiles/ShooterGame/Binaries/Linux/ShooterGameServer"
   env:
     - name: ARK_DIFFICULTY
       value: "1.0"
@@ -20,7 +20,7 @@ gameServer:
 serverConfigs:
   gameSettings:
     filename: "GameUserSettings.ini"
-    mountPath: "/home/steam/server"
+    mountPath: "/home/steam/serverfiles"
     content: |
       [/Script/ShooterGame.ShooterGameMode]
       DifficultyOffset=1.0
