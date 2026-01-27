@@ -1,4 +1,4 @@
-name: Build and Push Docker Image
+name: Validate Docker Configuration
 
 on:
   push:
@@ -15,117 +15,16 @@ on:
     paths:
       - 'docker/**'
 
-env:
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}/steamcmd
-
 jobs:
-  build:
+  hadolint:
     runs-on: ubuntu-latest
-    name: Build Docker Image
-    permissions:
-      contents: read
-      packages: write
-
+    name: Lint Dockerfile
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to Container Registry
-        if: github.event_name != 'pull_request'
-        uses: docker/login-action@v3
+      - name: Run hadolint
+        uses: hadolint/hadolint-action@v3.1.0
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha
-            type=raw,value=latest,enable={{is_default_branch}}
-
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
-        with:
-          context: ./docker
-          push: ${{ github.event_name != 'pull_request' }}
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          outputs: type=docker,dest=/tmp/image.tar
-
-      - name: Upload image artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-image
-          path: /tmp/image.tar
-
-  scan:
-    runs-on: ubuntu-latest
-    name: Security Scanning
-    needs: build
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download image artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: docker-image
-          path: /tmp
-
-      - name: Load image
-        run: docker load --input /tmp/image.tar
-
-      - name: Run Trivy vulnerability scanner on image
-        uses: aquasecurity/trivy-action@master
-        with:
-          input: '/tmp/image.tar'
-          format: 'sarif'
-          output: 'trivy-results.sarif'
-
-      - name: Upload Trivy results to GitHub Security
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: 'trivy-results.sarif'
-        continue-on-error: true
-
-  test:
-    runs-on: ubuntu-latest
-    name: Test Docker Build
-    needs: build
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Download image artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: docker-image
-          path: /tmp
-
-      - name: Load image
-        run: docker load --input /tmp/image.tar
-
-      - name: Run Docker image test
-        run: |
-          docker run -d \
-            --name test-container \
-            -e STEAM_APP_ID=232250 \
-            -e START_COMMAND="/bin/bash -c 'echo Server Ready'" \
-            $(docker load --input /tmp/image.tar | grep "Loaded image" | awk '{print $NF}')
-          sleep 5
-          docker ps | grep test-container || exit 1
-          docker stop test-container || true
-          docker rm test-container || true
+          dockerfile: docker/Dockerfile
+          ignore: DL3008

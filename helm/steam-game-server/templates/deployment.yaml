@@ -38,6 +38,12 @@ spec:
         - name: game
           containerPort: {{ .Values.service.targetPort }}
           protocol: UDP
+        command:
+        - /bin/bash
+        - -c
+        - |
+          /home/steam/steamcmd.sh +app_update {{ .Values.gameServer.steamId }} validate +quit
+          exec bash -c "{{ .Values.gameServer.startCommand }}"
         env:
         - name: STEAM_APP_ID
           value: "{{ .Values.gameServer.steamId }}"
