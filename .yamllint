@@ -14,7 +14,6 @@ rules:
     check-keys: false
 ignore: |
   helm/steam-game-server/templates/
-  examples/
   .git/
   .github/appmod/
   node_modules/

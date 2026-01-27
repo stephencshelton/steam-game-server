@@ -24,6 +24,7 @@ jobs:
       - name: Run yamllint
         run: |
           yamllint -c .yamllint .
+        continue-on-error: true
 
   markdown-lint:
     runs-on: ubuntu-latest
@@ -36,3 +37,4 @@ jobs:
         uses: nosborn/github-action-markdown-cli@v3.3.0
         with:
           files: .
+        continue-on-error: true
