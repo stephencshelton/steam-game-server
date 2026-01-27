@@ -102,8 +102,8 @@ persistence:
   annotations: {}
   # Selector to match existing PV
   selector: {}
-    # matchLabels:
-    #   app: steam-server
+  # matchLabels:
+  #   app: steam-server
   # Existing PVC to use
   existingClaim: ""
   # Mount path for the persistent volume
