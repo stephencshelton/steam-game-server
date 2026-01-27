@@ -36,6 +36,14 @@ spec:
         env:
         - name: HOME
           value: /home/steam
+        securityContext:
+          runAsUser: 1000
+          runAsGroup: 1000
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
         command:
         - /bin/bash
         - -c
