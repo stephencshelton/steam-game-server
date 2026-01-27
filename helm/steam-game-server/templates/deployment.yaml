@@ -78,6 +78,8 @@ spec:
         - |
           exec {{ .Values.gameServer.startCommand }}
         env:
+        - name: HOME
+          value: /home/steam
         - name: STEAM_APP_ID
           value: "{{ .Values.gameServer.steamId }}"
         - name: START_COMMAND
