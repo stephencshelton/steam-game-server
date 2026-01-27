@@ -8,17 +8,18 @@ ENV STEAM_USER=steam \
     DEBIAN_FRONTEND=noninteractive
 
 # Install dependencies
+# hadolint ignore=DL3008
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    ca-certificates=20240203 \
-    curl=7.81.0-1ubuntu1.17 \
-    wget=1.21.2-2ubuntu1 \
-    lib32gcc-s1=12-20220319-1ubuntu1 \
-    lib32stdc++6=12-20220319-1ubuntu1 \
-    lib32z1=1:1.2.11.dfsg-2ubuntu9.2 \
-    libstdc++6:i386=12-20220319-1ubuntu1 \
-    libc6:i386=2.35-0ubuntu3.6 \
-    net-tools=1.10.0-1ubuntu3 \
-    tini=0.19.0-1 \
+    ca-certificates \
+    curl \
+    wget \
+    lib32gcc-s1 \
+    lib32stdc++6 \
+    lib32z1 \
+    libstdc++6:i386 \
+    libc6:i386 \
+    net-tools \
+    tini \
     && rm -rf /var/lib/apt/lists/*
 
 # Create steam user
