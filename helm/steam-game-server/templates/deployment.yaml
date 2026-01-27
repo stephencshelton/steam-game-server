@@ -27,6 +27,7 @@ spec:
       {{- end }}
       serviceAccountName: {{ include "steam-game-server.serviceAccountName" . }}
       securityContext:
+        fsGroup: 1000
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       initContainers:
       - name: {{ .Chart.Name }}-installer
@@ -34,36 +35,29 @@ spec:
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         env:
         - name: HOME
-          value: /home/steam/serverfiles
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-              - ALL
-          readOnlyRootFilesystem: false
-          runAsNonRoot: false
+          value: /home/steam
         command:
         - /bin/bash
         - -lc
         - |
           echo "Initializing SteamCMD and installing game..."
-          steamcmd \
-            +@ShutdownOnFailedCommand 1 \
-            +@NoPromptForPassword 1 \
-            +@sSteamCmdForcePlatformType linux \
-            +force_install_dir /home/steam/serverfiles \
-            +login anonymous \
-            +app_update {{ .Values.gameServer.steamId }} validate \
-            +quit
+          steamcmd +@sSteamCmdForcePlatformType linux +force_install_dir /home/steam/serverfiles +login anonymous +app_update {{ .Values.gameServer.steamId }} validate +quit
           echo "Game installation complete!"
         volumeMounts:
         - name: server-files
-          mountPath: /home/steam/serverfiles
+          mountPath: /home/steam
           readOnly: false
       containers:
       - name: {{ .Chart.Name }}
         securityContext:
-          {{- toYaml .Values.securityContext | nindent 12 }}
+          runAsUser: 1000
+          runAsGroup: 1000
+          runAsNonRoot: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+              - ALL
+          readOnlyRootFilesystem: false
         image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
         imagePullPolicy: {{ .Values.image.pullPolicy }}
         ports:
@@ -72,9 +66,9 @@ spec:
           protocol: UDP
         command:
         - /bin/bash
-        - -c
+        - -lc
         - |
-          exec {{ .Values.gameServer.startCommand }}
+          exec /home/steam/serverfiles/startserver.sh -configfile=/home/steam/serverfiles/serverconfig.xml -logfile /home/steam/serverfiles/7dtd.log
         env:
         - name: STEAM_APP_ID
           value: "{{ .Values.gameServer.steamId }}"
@@ -87,10 +81,11 @@ spec:
           {{- toYaml .Values.resources | nindent 12 }}
         volumeMounts:
         - name: server-files
-          mountPath: {{ .Values.persistence.mountPath }}
+          mountPath: /home/steam
         {{- range $configName, $configData := .Values.serverConfigs }}
         - name: config-{{ $configName | lower }}
-          mountPath: {{ $configData.mountPath }}/{{ $configName }}
+          mountPath: {{ $configData.mountPath }}/{{ $configData.filename }}
+          subPath: {{ $configData.filename }}
           readOnly: true
         {{- end }}
       volumes:
