@@ -1,0 +1,51 @@
+# ARK: Survival Evolved Server Configuration
+# Steam ID: 232250
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/steamservers/steamcmd
+  pullPolicy: IfNotPresent
+  tag: latest
+
+gameServer:
+  steamId: "232250"
+  serverName: "ARK Survival Server"
+  maxPlayers: "64"
+  password: ""
+  env:
+    - name: ARK_DIFFICULTY
+      value: "1.0"
+    - name: ARK_XP_MULTIPLIER
+      value: "1.0"
+
+serverConfig:
+  filename: "GameUserSettings.ini"
+  mountPath: "/home/steam/server"
+  content: |
+    [/Script/ShooterGame.ShooterGameMode]
+    DifficultyOffset=1.0
+    XPMultiplier=1.0
+    TamingSpeedMultiplier=1.0
+    HarvestAmountMultiplier=1.0
+
+persistence:
+  enabled: true
+  size: 100Gi
+  storageClass: "standard"
+
+service:
+  type: LoadBalancer
+  port: 7777
+  targetPort: 7777
+
+resources:
+  requests:
+    cpu: 2
+    memory: 4Gi
+  limits:
+    cpu: 4
+    memory: 8Gi
+
+ingress:
+  enabled: false

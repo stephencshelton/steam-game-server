@@ -1,0 +1,102 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "steam-game-server.fullname" . }}
+  labels:
+    {{- include "steam-game-server.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "steam-game-server.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        {{- with .Values.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "steam-game-server.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "steam-game-server.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - name: {{ .Chart.Name }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 12 }}
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - name: game
+          containerPort: {{ .Values.service.targetPort }}
+          protocol: UDP
+        - name: http
+          containerPort: 8080
+          protocol: TCP
+        env:
+        - name: STEAM_APP_ID
+          value: "{{ .Values.gameServer.steamId }}"
+        - name: SERVER_NAME
+          value: "{{ .Values.gameServer.serverName }}"
+        - name: MAX_PLAYERS
+          value: "{{ .Values.gameServer.maxPlayers }}"
+        {{- if .Values.gameServer.password }}
+        - name: SERVER_PASSWORD
+          value: "{{ .Values.gameServer.password }}"
+        {{- end }}
+        {{- with .Values.gameServer.env }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- if .Values.livenessProbe }}
+        livenessProbe:
+          {{- toYaml .Values.livenessProbe | nindent 12 }}
+        {{- end }}
+        {{- if .Values.readinessProbe }}
+        readinessProbe:
+          {{- toYaml .Values.readinessProbe | nindent 12 }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.resources | nindent 12 }}
+        volumeMounts:
+        - name: server-files
+          mountPath: {{ .Values.persistence.mountPath }}
+        - name: server-config
+          mountPath: {{ .Values.serverConfig.mountPath }}
+          readOnly: true
+      volumes:
+      - name: server-config
+        configMap:
+          name: {{ include "steam-game-server.fullname" . }}-config
+      {{- if .Values.persistence.enabled }}
+      - name: server-files
+        {{- if .Values.persistence.existingClaim }}
+        persistentVolumeClaim:
+          claimName: {{ .Values.persistence.existingClaim }}
+        {{- else }}
+        persistentVolumeClaim:
+          claimName: {{ include "steam-game-server.fullname" . }}-pvc
+        {{- end }}
+      {{- else }}
+      - name: server-files
+        emptyDir: {}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

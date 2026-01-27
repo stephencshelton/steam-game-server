@@ -1,0 +1,53 @@
+# RUST Server Configuration
+# Steam ID: 1391110
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/steamservers/steamcmd
+  pullPolicy: IfNotPresent
+  tag: latest
+
+gameServer:
+  steamId: "1391110"
+  serverName: "RUST Server"
+  maxPlayers: "128"
+  password: ""
+  env:
+    - name: RUST_RCON_PORT
+      value: "28016"
+    - name: RUST_RCON_PASSWORD
+      value: "rconpassword"
+    - name: RUST_TICK_RATE
+      value: "30"
+
+serverConfig:
+  filename: "server.cfg"
+  mountPath: "/home/steam/server"
+  content: |
+    // RUST Server Configuration
+    server.hostname "{{ .Values.gameServer.serverName }}"
+    server.maxplayers {{ .Values.gameServer.maxPlayers }}
+    server.description "A RUST game server"
+    server.url "http://example.com"
+
+persistence:
+  enabled: true
+  size: 80Gi
+  storageClass: "fast-ssd"
+
+service:
+  type: LoadBalancer
+  port: 28015
+  targetPort: 28015
+
+resources:
+  requests:
+    cpu: 4
+    memory: 8Gi
+  limits:
+    cpu: 8
+    memory: 16Gi
+
+ingress:
+  enabled: false

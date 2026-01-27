@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "steam-game-server.fullname" . }}-config
+  labels:
+    {{- include "steam-game-server.labels" . | nindent 4 }}
+data:
+  {{ .Values.serverConfig.filename }}: |
+    {{- .Values.serverConfig.content | nindent 4 }}

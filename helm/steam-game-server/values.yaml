@@ -1,0 +1,148 @@
+# Default values for steam-game-server
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/steamservers/steamcmd
+  pullPolicy: IfNotPresent
+  tag: latest
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  runAsNonRoot: false
+  fsGroup: 1000
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: false
+  runAsUser: 0
+
+service:
+  type: LoadBalancer
+  port: 80
+  targetPort: 8080
+  annotations: {}
+  # nodePort: 30000  # Uncomment to specify a nodePort
+
+# Game server configuration
+gameServer:
+  # SteamID of the game to install (e.g., 258550 for ARK, 232250 for Ark: Survival Evolved)
+  steamId: "232250"
+  # Server name
+  serverName: "Steam Game Server"
+  # Maximum number of players
+  maxPlayers: "32"
+  # Server password (leave empty for public server)
+  password: ""
+  # Additional environment variables to pass to the server
+  env: []
+    # - name: ENV_VAR_NAME
+    #   value: "ENV_VAR_VALUE"
+
+# Server configuration file content (e.g., server.cfg, GameUserSettings.ini)
+serverConfig:
+  # The filename where this config will be mounted
+  filename: "server.cfg"
+  # The mount path where the config will be available
+  mountPath: "/home/steam/server"
+  # Raw config file content
+  content: |
+    [General]
+    ServerName={{ .Values.gameServer.serverName }}
+    MaxPlayers={{ .Values.gameServer.maxPlayers }}
+    Password={{ .Values.gameServer.password }}
+
+# Persistence configuration
+persistence:
+  # Enable persistent volume
+  enabled: true
+  # Storage class to use
+  storageClass: "standard"
+  # Access mode for the volume
+  accessMode: ReadWriteOnce
+  # Size of the persistent volume
+  size: 50Gi
+  # Annotations for the PVC
+  annotations: {}
+  # Selector to match existing PV
+  selector: {}
+    # matchLabels:
+    #   app: steam-server
+  # Existing PVC to use
+  existingClaim: ""
+  # Mount path for the persistent volume
+  mountPath: /home/steam/serverfiles
+
+# Ingress configuration
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    # nginx.ingress.kubernetes.io/rewrite-target: /
+  hosts:
+    - host: gameserver.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: gameserver-tls
+      hosts:
+        - gameserver.example.com
+
+# Resource limits and requests
+resources:
+  limits:
+    cpu: 4
+    memory: 8Gi
+  requests:
+    cpu: 2
+    memory: 4Gi
+
+# Autoscaling
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+# Node selector
+nodeSelector: {}
+
+# Tolerations
+tolerations: []
+
+# Affinity rules
+affinity: {}
+
+# Liveness and readiness probes
+livenessProbe:
+  httpGet:
+    path: /health
+    port: 8080
+  initialDelaySeconds: 30
+  periodSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /ready
+    port: 8080
+  initialDelaySeconds: 10
+  periodSeconds: 5

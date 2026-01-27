@@ -1,0 +1,66 @@
+name: Code Quality and Linting
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  yamllint:
+    runs-on: ubuntu-latest
+    name: YAML Lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install yamllint
+        run: pip install yamllint
+
+      - name: Run yamllint
+        run: |
+          yamllint -c .yamllint .
+        continue-on-error: true
+
+  shellcheck:
+    runs-on: ubuntu-latest
+    name: Shell Script Lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run shellcheck
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: 'docker'
+        continue-on-error: true
+
+  markdown-lint:
+    runs-on: ubuntu-latest
+    name: Markdown Lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run markdownlint
+        uses: nosborn/github-action-markdown-cli@v3.3.0
+        with:
+          files: .
+        continue-on-error: true
+
+  dockerfile-lint:
+    runs-on: ubuntu-latest
+    name: Dockerfile Lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run hadolint
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: docker/Dockerfile
+        continue-on-error: true

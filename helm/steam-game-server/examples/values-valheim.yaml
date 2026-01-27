@@ -1,0 +1,53 @@
+# Valheim Server Configuration
+# Steam ID: 258550
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/steamservers/steamcmd
+  pullPolicy: IfNotPresent
+  tag: latest
+
+gameServer:
+  steamId: "258550"
+  serverName: "Valheim Server"
+  maxPlayers: "10"
+  password: "yourpassword"
+  env:
+    - name: VALHEIM_PORT
+      value: "2456"
+    - name: VALHEIM_WORLD
+      value: "Dedicated"
+
+serverConfig:
+  filename: "start_server.sh"
+  mountPath: "/home/steam/server"
+  content: |
+    #!/bin/bash
+    ./valheim_server.x86_64 \
+      -nographics \
+      -batchmode \
+      -name "{{ .Values.gameServer.serverName }}" \
+      -port 2456 \
+      -world Dedicated
+
+persistence:
+  enabled: true
+  size: 50Gi
+  storageClass: "standard"
+
+service:
+  type: LoadBalancer
+  port: 2456
+  targetPort: 2456
+
+resources:
+  requests:
+    cpu: 1
+    memory: 2Gi
+  limits:
+    cpu: 2
+    memory: 4Gi
+
+ingress:
+  enabled: false
