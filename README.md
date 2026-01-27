@@ -21,16 +21,13 @@ A production-ready Helm chart for deploying Steam game servers with:
 **Quick Start:**
 ```bash
 helm install my-game-server ./helm/steam-game-server \
-  --set gameServer.steamId=232250 \
-  --set gameServer.serverName="My Server" \
-  --set gameServer.maxPlayers=64
+  --set gameServer.steamId=232250
 ```
 
 **Key Configuration:**
-- `gameServer.steamId`: SteamCMD App ID for the game
-- `gameServer.serverName`: Display name for the server
-- `gameServer.maxPlayers`: Maximum player count
-- `gameServer.password`: Optional server password
+- `gameServer.steamId`: SteamCMD App ID for the game (required)
+- `gameServer.env`: Optional environment variables for the server process
+- `serverConfigs`: One or more config files to mount in the pod
 - `persistence.enabled`: Enable persistent storage
 - `persistence.size`: Volume size (default: 50Gi)
 - `ingress.enabled`: Enable Ingress for external access
@@ -41,7 +38,42 @@ Edit `values.yaml` to customize:
 - Resource limits
 - Storage configuration
 - Ingress configuration
-- Server configuration file content
+- Multiple server configuration files
+
+**Multiple Configuration Files:**
+The chart supports mounting multiple configuration files into the pod. All game configuration should be done via config files. Configure them in `serverConfigs`:
+
+```yaml
+serverConfigs:
+  gameSettings:
+    filename: "GameUserSettings.ini"
+    mountPath: "/home/steam/gamefiles"
+    content: |
+      [Settings]
+      ServerName=My Server
+      MaxPlayers=64
+      Difficulty=1.0
+  
+  advanced:
+    filename: "advanced.cfg"
+    mountPath: "/home/steam/config"
+    content: |
+      [Advanced]
+      # Advanced settings here
+  
+  startup:
+    filename: "startup.sh"
+    mountPath: "/home/steam/scripts"
+    content: |
+      #!/bin/bash
+      # Startup script here
+```
+
+Each config file:
+- Is stored in a ConfigMap
+- Can be mounted at a different path
+- Can use Helm templating for dynamic content
+- Is mounted as read-only
 
 ### 2. Docker Image (`/docker`)
 

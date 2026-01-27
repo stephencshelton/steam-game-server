@@ -5,7 +5,7 @@
 replicaCount: 1
 
 image:
-  repository: ghcr.io/steamservers/steamcmd
+  repository: ghcr.io/sshelton/steam-game-server/steamcmd
   pullPolicy: IfNotPresent
   tag: latest
 
@@ -35,38 +35,58 @@ securityContext:
 
 service:
   type: LoadBalancer
-  port: 80
-  targetPort: 8080
+  # Port to expose on the service (typically the game port)
+  port: 7777
+  # Container port for the game server (UDP)
+  targetPort: 7777
   annotations: {}
   # nodePort: 30000  # Uncomment to specify a nodePort
 
-# Game server configuration
+# Game server installation and environment
 gameServer:
-  # SteamID of the game to install (e.g., 258550 for ARK, 232250 for Ark: Survival Evolved)
+  # SteamID of the game to install (e.g., 232250 for ARK, 258550 for Valheim, 1391110 for RUST)
   steamId: "232250"
-  # Server name
-  serverName: "Steam Game Server"
-  # Maximum number of players
-  maxPlayers: "32"
-  # Server password (leave empty for public server)
-  password: ""
-  # Additional environment variables to pass to the server
+  # Command to start the game server (executed after installation)
+  # Example for ARK: "cd /home/steam/serverfiles && ./ShooterGame/Binaries/Linux/ShooterGameServer"
+  startCommand: ""
+  # Additional environment variables to pass to the server process
   env: []
     # - name: ENV_VAR_NAME
     #   value: "ENV_VAR_VALUE"
 
-# Server configuration file content (e.g., server.cfg, GameUserSettings.ini)
-serverConfig:
-  # The filename where this config will be mounted
-  filename: "server.cfg"
-  # The mount path where the config will be available
-  mountPath: "/home/steam/server"
-  # Raw config file content
-  content: |
-    [General]
-    ServerName={{ .Values.gameServer.serverName }}
-    MaxPlayers={{ .Values.gameServer.maxPlayers }}
-    Password={{ .Values.gameServer.password }}
+# Server configuration files (supports multiple files mounted at different paths)
+# Define one or more config files to mount into the pod
+serverConfigs:
+  default:
+    # The filename within the ConfigMap
+    filename: "server.cfg"
+    # The mount path inside the pod where this file will be available
+    mountPath: "/home/steam/server"
+    # Raw config file content
+    content: |
+      [ServerConfig]
+      # Configure your game server here
+  # Add more configs as needed, e.g.:
+  # gameSettings:
+  #   filename: "GameUserSettings.ini"
+  #   mountPath: "/home/steam/gamefiles"
+  #   content: |
+  #     [Settings]
+  #     ...
+  # startup:
+  #   filename: "startup.sh"
+  #   mountPath: "/home/steam/scripts"
+  #   content: |
+  #     #!/bin/bash
+  #     ...
+  #   content: |
+  #     [Settings]
+  #     ..."
+  # advanced:
+  #   filename: "advanced.cfg"
+  #   mountPath: "/home/steam/config"
+  #   content: |
+  #     ...
 
 # Persistence configuration
 persistence:
@@ -132,17 +152,4 @@ tolerations: []
 # Affinity rules
 affinity: {}
 
-# Liveness and readiness probes
-livenessProbe:
-  httpGet:
-    path: /health
-    port: 8080
-  initialDelaySeconds: 30
-  periodSeconds: 10
 
-readinessProbe:
-  httpGet:
-    path: /ready
-    port: 8080
-  initialDelaySeconds: 10
-  periodSeconds: 5

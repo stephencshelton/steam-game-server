@@ -15,9 +15,5 @@ spec:
       targetPort: game
       protocol: UDP
       name: game
-    - port: 8080
-      targetPort: http
-      protocol: TCP
-      name: http
   selector:
     {{- include "steam-game-server.selectorLabels" . | nindent 4 }}

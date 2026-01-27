@@ -38,43 +38,33 @@ spec:
         - name: game
           containerPort: {{ .Values.service.targetPort }}
           protocol: UDP
-        - name: http
-          containerPort: 8080
-          protocol: TCP
         env:
         - name: STEAM_APP_ID
           value: "{{ .Values.gameServer.steamId }}"
-        - name: SERVER_NAME
-          value: "{{ .Values.gameServer.serverName }}"
-        - name: MAX_PLAYERS
-          value: "{{ .Values.gameServer.maxPlayers }}"
-        {{- if .Values.gameServer.password }}
-        - name: SERVER_PASSWORD
-          value: "{{ .Values.gameServer.password }}"
-        {{- end }}
+        - name: START_COMMAND
+          value: "{{ .Values.gameServer.startCommand }}"
         {{- with .Values.gameServer.env }}
         {{- toYaml . | nindent 8 }}
-        {{- end }}
-        {{- if .Values.livenessProbe }}
-        livenessProbe:
-          {{- toYaml .Values.livenessProbe | nindent 12 }}
-        {{- end }}
-        {{- if .Values.readinessProbe }}
-        readinessProbe:
-          {{- toYaml .Values.readinessProbe | nindent 12 }}
         {{- end }}
         resources:
           {{- toYaml .Values.resources | nindent 12 }}
         volumeMounts:
         - name: server-files
           mountPath: {{ .Values.persistence.mountPath }}
-        - name: server-config
-          mountPath: {{ .Values.serverConfig.mountPath }}
+        {{- range $configName, $configData := .Values.serverConfigs }}
+        - name: config-{{ $configName }}
+          mountPath: {{ $configData.mountPath }}
           readOnly: true
+        {{- end }}
       volumes:
-      - name: server-config
+      {{- range $configName, $configData := .Values.serverConfigs }}
+      - name: config-{{ $configName }}
         configMap:
           name: {{ include "steam-game-server.fullname" . }}-config
+          items:
+          - key: {{ $configData.filename }}
+            path: {{ $configData.filename }}
+      {{- end }}
       {{- if .Values.persistence.enabled }}
       - name: server-files
         {{- if .Values.persistence.existingClaim }}

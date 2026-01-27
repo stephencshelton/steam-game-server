@@ -4,15 +4,13 @@
 replicaCount: 1
 
 image:
-  repository: ghcr.io/steamservers/steamcmd
+  repository: ghcr.io/sshelton/steam-game-server/steamcmd
   pullPolicy: IfNotPresent
   tag: latest
 
 gameServer:
   steamId: "1391110"
-  serverName: "RUST Server"
-  maxPlayers: "128"
-  password: ""
+  startCommand: "/home/steam/serverfiles/RustDedicated +server.port 28015 +server.identity rust_server"
   env:
     - name: RUST_RCON_PORT
       value: "28016"
@@ -21,15 +19,16 @@ gameServer:
     - name: RUST_TICK_RATE
       value: "30"
 
-serverConfig:
-  filename: "server.cfg"
-  mountPath: "/home/steam/server"
-  content: |
-    // RUST Server Configuration
-    server.hostname "{{ .Values.gameServer.serverName }}"
-    server.maxplayers {{ .Values.gameServer.maxPlayers }}
-    server.description "A RUST game server"
-    server.url "http://example.com"
+serverConfigs:
+  config:
+    filename: "server.cfg"
+    mountPath: "/home/steam/server"
+    content: |
+      // RUST Server Configuration
+      server.hostname "My RUST Server"
+      server.maxplayers 128
+      server.description "A RUST game server"
+      server.url "http://example.com"
 
 persistence:
   enabled: true
