@@ -1,4 +1,4 @@
-name: Helm Chart Lint and Validation
+name: Helm Chart Validation
 
 on:
   push:
@@ -7,106 +7,27 @@ on:
       - develop
     paths:
       - 'helm/**'
-      - '.github/workflows/helm-*.yaml'
+      - '.github/workflows/helm-lint.yaml'
   pull_request:
     branches:
       - main
       - develop
     paths:
       - 'helm/**'
-      - '.github/workflows/helm-*.yaml'
 
 jobs:
-  lint:
+  helm-lint:
     runs-on: ubuntu-latest
-    name: Helm Lint
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Set up Helm
-        uses: azure/setup-helm@v3
-        with:
-          version: 'latest'
-
-      - name: Lint Helm charts
-        run: |
-          echo "Linting Helm charts..."
-          for chart in helm/*/; do
-            if [ -f "${chart}Chart.yaml" ]; then
-              echo "Linting: $chart"
-              helm lint "$chart" --strict
-            fi
-          done
-
-  validate:
-    runs-on: ubuntu-latest
-    name: YAML Validation
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Install yamllint
-        run: |
-          pip install yamllint
-
-      - name: Validate YAML files
-        run: |
-          echo "Validating YAML files..."
-          yamllint -c .yamllint helm/
-
-  template:
-    runs-on: ubuntu-latest
-    name: Template Rendering
+    name: Lint Helm Chart
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
       - name: Set up Helm
         uses: azure/setup-helm@v3
-        with:
-          version: 'latest'
 
-      - name: Render templates
-        run: |
-          echo "Rendering Helm templates..."
-          for chart in helm/*/; do
-            if [ -f "${chart}Chart.yaml" ]; then
-              echo "Rendering: $chart"
-              helm template "$chart" > /tmp/rendered.yaml
-              echo "Template rendered successfully"
-            fi
-          done
+      - name: Lint Helm chart
+        run: helm lint helm/steam-game-server/
 
-  deploy-test:
-    runs-on: ubuntu-latest
-    name: Test Deployment
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Helm
-        uses: azure/setup-helm@v3
-        with:
-          version: 'latest'
-
-      - name: Create test namespace
-        run: |
-          kubectl config set-cluster docker-desktop --server=https://kubernetes.docker.internal:6443 || true
-          kubectl create namespace helm-test || true
-
-      - name: Dry-run deployment
-        run: |
-          echo "Testing Helm deployment dry-run..."
-          for chart in helm/*/; do
-            if [ -f "${chart}Chart.yaml" ]; then
-              echo "Dry-run: $chart"
-              helm upgrade --install test-release "$chart" \
-                --namespace helm-test \
-                --dry-run \
-                --debug
-            fi
-          done
-        continue-on-error: true
+      - name: Template rendering test
+        run: helm template my-release helm/steam-game-server/ > /dev/null

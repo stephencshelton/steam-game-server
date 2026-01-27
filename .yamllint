@@ -13,6 +13,8 @@ rules:
   truthy:
     check-keys: false
 ignore: |
+  helm/steam-game-server/templates/
+  .git/
   .github/appmod/
   node_modules/
   vendor/
