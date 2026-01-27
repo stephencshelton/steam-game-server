@@ -37,7 +37,7 @@ spec:
         - -c
         - |
           echo "Initializing SteamCMD and installing game..."
-          steamcmd +login anonymous +force_install_dir /home/steam/serverfiles +app_update {{ .Values.gameServer.steamId }} validate +quit
+          steamcmd +force_install_dir /home/steam/serverfiles +login anonymous +app_update {{ .Values.gameServer.steamId }} validate +quit
           echo "Game installation complete!"
         volumeMounts:
         - name: server-files
