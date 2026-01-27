@@ -9,7 +9,7 @@ image:
   tag: latest
 
 gameServer:
-  steamId: "251570"
+  steamId: "294420"
   startCommand: "/home/steam/serverfiles/startserver.sh"
   env: []
 

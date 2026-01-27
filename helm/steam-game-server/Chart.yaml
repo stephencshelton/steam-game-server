@@ -1,12 +1,12 @@
 apiVersion: v2
-name: steam-game-server
-description: A Helm chart for deploying Steam-based dedicated game servers
+name: steam-server
+description: A Helm chart for deploying Steam-based dedicated servers
 type: application
 version: 0.1.0
 appVersion: "1.0"
 keywords:
   - steam
-  - game-server
+  - server
   - dedicated-server
 maintainers:
   - name: Steam Server Team

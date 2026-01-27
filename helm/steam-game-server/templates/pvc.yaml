@@ -2,7 +2,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ include "steam-game-server.fullname" . }}-pvc
+  name: {{ .Release.Name }}-{{ .Chart.Name }}-pvc
   labels:
     {{- include "steam-game-server.labels" . | nindent 4 }}
   {{- with .Values.persistence.annotations }}

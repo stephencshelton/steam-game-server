@@ -16,12 +16,12 @@ spec:
         replicaCount: 1
 
         image:
-          repository: ghcr.io/sshelton/steam-game-server/steamcmd
+          repository: steamcmd/steamcmd
           pullPolicy: IfNotPresent
           tag: latest
 
         gameServer:
-          steamId: "251570"
+          steamId: "294420"
           startCommand: "/home/steam/serverfiles/startserver.sh"
           env: []
 
