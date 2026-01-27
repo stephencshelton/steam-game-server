@@ -11,7 +11,7 @@ spec:
     path: helm/steam-game-server
 
     helm:
-      releaseName: 7dtd-server
+      releaseName: server-7dtd
       values: |
         replicaCount: 1
 
