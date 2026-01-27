@@ -5,28 +5,28 @@ metadata:
   namespace: argocd
 spec:
   project: default
-  
+
   # Source configuration - points to this repository
   source:
     repoURL: https://github.com/stephencshelton/steam-game-server.git
     targetRevision: main  # Change to your branch if needed
     path: helm/steam-game-server
-    
+
     helm:
       releaseName: 7dtd-server
       values: |
         replicaCount: 1
-        
+
         image:
           repository: ghcr.io/sshelton/steam-game-server/steamcmd
           pullPolicy: IfNotPresent
           tag: latest
-        
+
         gameServer:
           steamId: "251570"
           startCommand: "/home/steam/serverfiles/startserver.sh"
           env: []
-        
+
         serverConfigs:
           gameSettings:
             filename: "serverconfig.xml"
@@ -182,17 +182,17 @@ spec:
               <adminTools>
                 <!-- List of admins - replace Steam IDs -->
                 <admin steamID="76561198000000000" permission_level="0" />
-                <!-- 
+                <!--
                   permission_level: 0=Owner, 1=Admin, 2=Moderator
                   Replace 76561198000000000 with the actual Steam64 ID of the admin
                 -->
               </adminTools>
-        
+
         persistence:
           enabled: true
           size: 100Gi
           storageClass: "standard"  # Change to your storage class
-        
+
         service:
           type: LoadBalancer  # Change to ClusterIP if using Ingress
           port: 26900
@@ -200,7 +200,7 @@ spec:
           annotations:
             external-dns.alpha.kubernetes.io/hostname: "7dtd.example.com"  # Change to your domain
             external-dns.alpha.kubernetes.io/ttl: "300"  # Optional: DNS TTL in seconds
-        
+
         resources:
           requests:
             cpu: 2
@@ -208,19 +208,19 @@ spec:
           limits:
             cpu: 4
             memory: 8Gi
-        
+
         ingress:
           enabled: false  # Set to true if you have an Ingress controller
-  
+
   # Destination - where to deploy
   destination:
     server: https://kubernetes.default.svc
     namespace: 7dtd  # Change to your desired namespace
-  
+
   # Sync policy
   syncPolicy:
     automated:
-      prune: true      # Delete resources that are no longer in Git
-      selfHeal: true   # Automatically sync if cluster drifts
+      prune: true
+      selfHeal: true
     syncOptions:
-    - CreateNamespace=true  # Create namespace if it doesn't exist
+      - CreateNamespace=true

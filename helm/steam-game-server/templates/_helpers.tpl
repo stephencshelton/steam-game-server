@@ -9,7 +9,7 @@ Expand the name of the chart.
 Create a default fully qualified app name.
 */}}
 {{- define "steam-game-server.fullname" -}}
-{{- if .Values.fullnameOverride }}
+{{- if and .Values .Values.fullnameOverride }}
 {{- .Values.fullnameOverride | trunc 63 | trimSuffix "-" }}
 {{- else }}
 {{- $name := default .Chart.Name .Values.nameOverride }}

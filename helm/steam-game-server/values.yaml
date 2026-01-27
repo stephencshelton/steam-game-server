@@ -51,8 +51,8 @@ gameServer:
   startCommand: ""
   # Additional environment variables to pass to the server process
   env: []
-    # - name: ENV_VAR_NAME
-    #   value: "ENV_VAR_VALUE"
+  # - name: ENV_VAR_NAME
+  #   value: "ENV_VAR_VALUE"
 
 # Server configuration files (supports multiple files mounted at different paths)
 # Define one or more config files to mount into the pod
@@ -151,5 +151,3 @@ tolerations: []
 
 # Affinity rules
 affinity: {}
-
-

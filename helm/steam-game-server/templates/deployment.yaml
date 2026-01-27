@@ -66,7 +66,7 @@ spec:
       {{- range $configName, $configData := .Values.serverConfigs }}
       - name: config-{{ $configName }}
         configMap:
-          name: {{ include "steam-game-server.fullname" . }}-config
+          name: {{ include "steam-game-server.fullname" $ }}-config
           items:
           - key: {{ $configData.filename }}
             path: {{ $configData.filename }}
