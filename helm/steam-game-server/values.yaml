@@ -35,10 +35,11 @@ securityContext:
 
 service:
   type: LoadBalancer
-  # Port to expose on the service (typically the game port)
-  port: 7777
-  # Container port for the game server (UDP)
-  targetPort: 7777
+  ports:
+    - name: game
+      port: 7777
+      targetPort: 7777
+      protocol: UDP
   annotations: {}
   # nodePort: 30000  # Uncomment to specify a nodePort
 

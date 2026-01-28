@@ -8,6 +8,22 @@ image:
   pullPolicy: IfNotPresent
   tag: latest
 
+service:
+  type: LoadBalancer
+  ports:
+    - name: game
+      port: 26900
+      targetPort: 26900
+      protocol: UDP
+    - name: query
+      port: 26901
+      targetPort: 26901
+      protocol: UDP
+    - name: steam
+      port: 26902
+      targetPort: 26902
+      protocol: UDP
+
 gameServer:
   steamId: "294420"
   startCommand: "/home/steam/serverfiles/startserver.sh"
